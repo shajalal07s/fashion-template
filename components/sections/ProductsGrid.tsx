@@ -321,7 +321,9 @@ export function ProductsGrid({
             </Sheet>
             <span className="hidden text-sm text-foreground lg:inline">{t("filterTitle")}</span>
           </div>
-          <CardStyleSelector value={cardVariant} onChange={setCardVariant} />
+          <div className="hidden sm:block">
+            <CardStyleSelector value={cardVariant} onChange={setCardVariant} />
+          </div>
           <span className="text-muted-foreground text-sm">
             {t("resultsCount", { count: filtered.length })}
           </span>

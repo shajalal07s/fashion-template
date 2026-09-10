@@ -56,13 +56,13 @@ export function MobileNav({ onNavigate }: MobileNavProps) {
   ];
 
   return (
-    <div className="flex flex-col">
-      <div className="from-primary to-secondary flex items-center justify-between bg-gradient-to-r px-5 py-4 text-primary-foreground">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="from-primary to-secondary flex shrink-0 items-center justify-between bg-gradient-to-r px-5 py-4 text-primary-foreground">
         <p className="text-sm font-semibold">{t("mobile.greeting")}</p>
         <Gift className="size-5" aria-hidden="true" />
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-3" aria-label={t("mobileNav")}>
+      <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-3" aria-label={t("mobileNav")}>
         <p className="text-muted-foreground px-3 pt-1 pb-2 text-xs font-bold tracking-wider uppercase">
           {t("mobile.menu")}
         </p>

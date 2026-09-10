@@ -20,6 +20,7 @@ import { useWishlistStore } from "@/store/wishlist.store";
 import { productPath } from "@/features/shop/categories";
 import type { Product } from "@/types/product";
 import { useCallback, useState } from "react";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 export type ProductCardVariant = "classic" | "editorial" | "playful" | "luxe";
 
@@ -73,10 +74,12 @@ function PriceBlock({
   className?: string;
 }) {
   return (
-    <div className={cn("flex items-baseline gap-2", className)}>
-      <span className="text-secondary font-bold">{price}</span>
+    <div className={cn("flex flex-wrap items-baseline gap-x-2", className)}>
+      <span className="text-secondary text-sm font-bold sm:text-base">{price}</span>
       {product.compareAtPrice && product.compareAtPrice > product.price && (
-        <span className="text-muted-foreground line-through">{comparePrice}</span>
+        <span className="text-muted-foreground text-xs line-through sm:text-sm">
+          {comparePrice}
+        </span>
       )}
     </div>
   );
@@ -115,6 +118,8 @@ export function ProductCard({ product, variant = "classic" }: ProductCardProps) 
   const toggleWishlist = useWishlistStore((state) => state.toggle);
   const isInWishlist = useWishlistStore((state) => state.isInWishlist(product.id));
   const [justAdded, setJustAdded] = useState(false);
+  const isMobile = useIsMobile();
+  const activeVariant = isMobile ? "classic" : variant;
 
   const handleAddToCart = useCallback(() => {
     addItem(product);
@@ -154,7 +159,7 @@ export function ProductCard({ product, variant = "classic" }: ProductCardProps) 
     </Dialog>
   );
 
-  if (variant === "editorial") {
+  if (activeVariant === "editorial") {
     return (
       <article className="group/card border-border relative flex flex-col border-t border-b bg-white">
         <div className="relative h-[250px] overflow-hidden md:h-[380px]">
@@ -185,21 +190,18 @@ export function ProductCard({ product, variant = "classic" }: ProductCardProps) 
             </div>
           </ProductMedia>
         </div>
-        <div className="flex flex-1 flex-col gap-2 px-1 pt-4">
+        <div className="flex flex-1 flex-col gap-2 px-1 pt-3">
           <ColorDots colors={product.colors ?? []} />
           <Link
             href={href}
-            className="text-foreground font-heading line-clamp-1 text-lg leading-snug font-semibold hover:underline"
+            className="text-foreground font-heading line-clamp-1 text-sm leading-snug font-semibold hover:underline sm:text-lg"
           >
             {product.name}
           </Link>
-          <div className="mt-auto flex items-end justify-between gap-2 border-t border-border pt-3">
-            <div className="flex flex-col">
-              <span className="text-muted-foreground text-[11px] tracking-widest uppercase">Price</span>
-              <PriceBlock product={product} price={price} comparePrice={comparePrice} />
-            </div>
-            <span className="flex items-center gap-1 text-xs font-semibold tracking-wide text-foreground uppercase">
-              {t("viewProduct")}
+          <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-2.5">
+            <PriceBlock product={product} price={price} comparePrice={comparePrice} className="min-w-0" />
+            <span className="flex shrink-0 items-center gap-1 text-[11px] font-semibold tracking-wide text-foreground uppercase sm:text-xs">
+              <span className="hidden sm:inline">{t("viewProduct")}</span>
               <ArrowRight className="text-secondary size-4" aria-hidden="true" />
             </span>
           </div>
@@ -208,7 +210,7 @@ export function ProductCard({ product, variant = "classic" }: ProductCardProps) 
     );
   }
 
-  if (variant === "playful") {
+  if (activeVariant === "playful") {
     return (
       <article className="group/card flex flex-col rounded-3xl border-2 border-border bg-white p-2.5 transition-shadow hover:shadow-lg">
         <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-muted">
@@ -222,7 +224,7 @@ export function ProductCard({ product, variant = "classic" }: ProductCardProps) 
             </span>
           )}
           <ProductMedia product={product} href={href} hrefLabel={product.name}>
-            <div className="absolute inset-0 z-[4] flex items-center justify-center gap-2 bg-black/35 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover/card:opacity-100">
+            <div className="absolute inset-0 z-[4] flex items-center justify-center gap-2 bg-black/35 backdrop-blur-[2px] transition-opacity duration-300 group-hover/card:opacity-100">
               <Button
                 size="icon"
                 variant="secondary"
@@ -258,7 +260,7 @@ export function ProductCard({ product, variant = "classic" }: ProductCardProps) 
     );
   }
 
-  if (variant === "luxe") {
+  if (activeVariant === "luxe") {
     return (
       <article className="group/card flex flex-col border border-primary/20 bg-[#fffaf2] p-3">
         <div className="relative h-[240px] overflow-hidden bg-[#f5ead8] p-4 md:h-[360px]">
@@ -284,18 +286,21 @@ export function ProductCard({ product, variant = "classic" }: ProductCardProps) 
         </div>
 
         <div className="flex flex-1 flex-col gap-1.5 pt-4 text-center">
-          <span className="text-primary/80 text-[11px] font-medium tracking-[0.25em] uppercase">
+          <span className="text-primary/80 truncate text-[11px] font-medium tracking-[0.25em] uppercase">
             {product.brand ?? product.category}
           </span>
-          <Link href={href} className="text-foreground font-heading line-clamp-1 text-base font-semibold hover:underline">
+          <Link
+            href={href}
+            className="text-foreground font-heading line-clamp-1 text-sm font-semibold hover:underline sm:text-base"
+          >
             {product.name}
           </Link>
-          <div className="mt-auto flex items-center justify-center gap-3 border-t border-primary/15 pt-3">
+          <div className="mt-auto flex flex-col items-center gap-2 border-t border-primary/15 pt-3 sm:flex-row sm:justify-center sm:gap-3">
             <PriceBlock product={product} price={price} comparePrice={comparePrice} />
             <Button
               size="sm"
               variant="outline"
-              className="h-8 gap-1 border-primary/30 uppercase"
+              className="h-9 w-full justify-center gap-1 border-primary/30 uppercase sm:h-8 sm:w-auto"
               onClick={(event) => { stop(event); handleAddToCart(); }}
               aria-label={t("addToCart")}
             >

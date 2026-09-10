@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { MobileBottomBar } from "@/components/layout/MobileBottomBar";
 import { Hero } from "@/components/sections/Hero";
 import { Marquee } from "@/components/sections/Marquee";
 import { Coupons } from "@/components/sections/Coupons";
@@ -22,7 +23,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
   return (
     <>
       <Header />
-      <main className="flex flex-1 flex-col">
+      <main className="flex flex-1 flex-col pb-14 md:pb-0">
         <Hero />
         <Marquee />
         <Coupons />
@@ -55,6 +56,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
         <CTA />
       </main>
       <Footer />
+      <MobileBottomBar />
     </>
   );
 }

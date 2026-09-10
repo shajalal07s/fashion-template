@@ -38,9 +38,9 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="left" className="w-[320px] p-0">
               <SheetTitle className="sr-only">{t("mobileNav")}</SheetTitle>
-              <div className="flex h-full flex-col">
+              <div className="flex h-full min-h-0 flex-col">
                 <MobileNav onNavigate={() => setOpen(false)} />
-                <div className="border-t px-5 py-4">
+                <div className="shrink-0 border-t px-5 py-4">
                   <LanguageSwitcher />
                 </div>
               </div>
