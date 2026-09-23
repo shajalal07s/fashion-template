@@ -4,12 +4,14 @@ export interface Product {
   slug: string;
   sku?: string;
   description: string;
+  shortDescription?: string;
   price: number;
   compareAtPrice?: number | null;
   images: string[];
   colors?: string[];
   sizes?: string[];
   category?: string;
+  subcategory?: string;
   brand?: string;
   stock: number;
   rating?: number;

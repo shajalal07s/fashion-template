@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Hind_Siliguri, Lato, Teachers } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import { siteConfig } from "@/config/site";
 import "@/app/globals.css";
 
@@ -24,8 +25,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       className={`${teachers.variable} ${lato.variable} ${hindSiliguri.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

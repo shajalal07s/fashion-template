@@ -15,5 +15,6 @@ export const ROUTES = {
   checkout: "/checkout",
   login: "/login",
   register: "/register",
+  adminLogin: "/admin-login",
   dashboard: "/dashboard",
 } as const;

@@ -5,6 +5,7 @@ import { ShoppingBag, Zap, Minus, Plus, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cart.store";
 import { productPath } from "@/features/shop/categories";
+import { siteConfig } from "@/config/site";
 import { useCallback, useState } from "react";
 import type { Product } from "@/types/product";
 
@@ -32,10 +33,7 @@ export function ProductPurchaseCard({ product }: ProductPurchaseCardProps) {
     window.setTimeout(() => setJustAdded(false), 1200);
   }, [addItem, product, quantity]);
 
-  const productUrl =
-    typeof window !== "undefined"
-      ? window.location.href
-      : `/${productPath(product.category, product.slug)}`;
+  const productUrl = `${siteConfig.url}/${productPath(product.category, product.slug)}`;
 
   const shareText = `${product.name} - ${format.number(product.price, {
     style: "currency",
