@@ -15,7 +15,8 @@ interface UseAuthReturn {
 export function useAuth(): UseAuthReturn {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  // Derived from the persisted user so the session survives page refresh.
+  const isAuthenticated = user !== null;
   const login = useAuthStore((state) => state.login);
   const logoutStore = useAuthStore((state) => state.logout);
 
