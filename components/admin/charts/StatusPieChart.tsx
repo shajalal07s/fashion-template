@@ -7,11 +7,12 @@ import { STATUS_COLORS } from "@/components/admin/charts/nivo-theme";
 import { useNivoTheme } from "@/components/admin/charts/use-nivo-theme";
 import type { StatusSlice } from "@/features/admin/analytics";
 
-export function StatusPieChart({ data }: { data: StatusSlice[] }) {
+export function StatusPieChart({ data, unitLabel }: { data: StatusSlice[]; unitLabel?: string }) {
   const t = useTranslations("Dashboard.admin");
   const nivoTheme = useNivoTheme();
   const { resolvedTheme } = useTheme();
   const labelColor = resolvedTheme === "dark" ? "#ffffff" : "#1a0d00";
+  const unit = unitLabel ?? t("charts.ordersUnit");
 
   return (
     <div className="h-[300px] w-full md:h-[340px]">
@@ -48,7 +49,7 @@ export function StatusPieChart({ data }: { data: StatusSlice[] }) {
           <div className="border border-border bg-card px-3 py-2 text-xs shadow-md">
             <p className="font-semibold text-foreground">{datum.label}</p>
             <p className="font-bold text-secondary">
-              {datum.value} {t("charts.ordersUnit")}
+              {datum.value} {unit}
             </p>
           </div>
         )}

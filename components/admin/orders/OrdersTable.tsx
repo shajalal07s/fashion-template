@@ -75,6 +75,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { AdminOrder, AdminOrderStatus } from "@/features/admin/analytics";
+import { printInvoiceDoc } from "@/components/admin/print-invoice";
 
 type SortKey = "date" | "customer" | "total";
 
@@ -770,7 +771,7 @@ export function OrdersTable({
                 <Button variant="outline" size="sm" onClick={() => setInvoice(null)}>
                   {t("orders.detailsClose")}
                 </Button>
-                <Button size="sm" className="gap-1.5" onClick={() => window.print()}>
+                <Button size="sm" className="gap-1.5" onClick={() => printInvoiceDoc()}>
                   <Printer className="size-3.5" aria-hidden="true" />
                   {t("orders.invPrint")}
                 </Button>

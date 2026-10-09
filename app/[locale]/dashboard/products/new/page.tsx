@@ -11,6 +11,7 @@ import {
   CategoriesSection,
   GallerySection,
   GeneralSection,
+  InventorySection,
   PricingSection,
   SeoSection,
   VideosSection,
@@ -44,6 +45,8 @@ export default function DashboardProductNewPage() {
   const [brand, setBrand] = useState("Fashion Bangla");
   const [rating, setRating] = useState(5);
   const [isActive, setIsActive] = useState(true);
+  const [stockStatus, setStockStatus] = useState<"auto" | "instock" | "outofstock" | "backorder">("auto");
+  const [threshold, setThreshold] = useState(10);
   const [gallery, setGalleryLocal] = useState<string[]>([]);
   const [videos, setVideosLocal] = useState<string[]>([]);
   const [seo, setSeoLocal] = useState<ProductSeo | null>(null);
@@ -101,6 +104,8 @@ export default function DashboardProductNewPage() {
       stock,
       rating,
       isActive,
+      stockStatus: stockStatus === "auto" ? undefined : stockStatus,
+      lowStockThreshold: threshold,
       createdAt: now,
       updatedAt: now,
     });
@@ -143,8 +148,14 @@ export default function DashboardProductNewPage() {
             onPrice={setPrice}
             compare={compare}
             onCompare={setCompare}
+          />
+          <InventorySection
             stock={stock}
             onStock={setStock}
+            status={stockStatus}
+            onStatus={setStockStatus}
+            threshold={threshold}
+            onThreshold={setThreshold}
           />
           <CategoriesSection
             category={category}

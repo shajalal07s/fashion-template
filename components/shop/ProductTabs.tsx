@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Star } from "lucide-react";
 import type { Product } from "@/types/product";
 import { cn } from "@/lib/utils";
+import { isHtmlDescription, RichDescription } from "@/components/shop/rich-description";
 import { useState } from "react";
 
 interface ProductTabsProps {
@@ -62,9 +63,16 @@ export function ProductTabs({ product }: ProductTabsProps) {
 
       <div className="p-5 md:p-7">
         {activeTab === "description" && (
-          <p className="text-muted-foreground max-w-4xl leading-relaxed">
-            {product.description}
-          </p>
+          isHtmlDescription(product.description) ? (
+            <RichDescription
+              html={product.description}
+              className="text-muted-foreground max-w-4xl"
+            />
+          ) : (
+            <p className="text-muted-foreground max-w-4xl leading-relaxed">
+              {product.description}
+            </p>
+          )
         )}
 
         {activeTab === "additional" && (

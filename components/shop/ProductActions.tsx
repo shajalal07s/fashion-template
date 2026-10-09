@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cart.store";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { cn } from "@/lib/utils";
+import { plainDescription } from "@/components/shop/rich-description";
 import { useCallback, useState } from "react";
 import type { Product } from "@/types/product";
 
@@ -42,7 +43,7 @@ export function ProductActions({ product }: ProductActionsProps) {
 
       <div className="flex flex-col gap-1.5 text-sm">
         <span className="text-muted-foreground">{t("description")}</span>
-        <p>{product.description}</p>
+        <p>{plainDescription(product.description)}</p>
       </div>
 
       <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">

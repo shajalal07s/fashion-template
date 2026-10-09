@@ -1,116 +1,138 @@
 "use client";
 
-import Image from "next/image";
 import { useFormatter, useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
-import { Eye, Printer } from "lucide-react";
+import { Banknote, Download, Package, Search, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
-import { ProductInvoiceDoc } from "@/components/admin/products/ProductInvoiceDoc";
+import { InvoicesTable } from "@/components/admin/products/InvoicesTable";
 import { useAdminOrders } from "@/features/admin/useAdminOrders";
 import { productSalesSummary } from "@/features/admin/analytics";
+import { toast } from "sonner";
 
 export default function DashboardProductInvoicesPage() {
   const t = useTranslations("Dashboard.admin");
   const format = useFormatter();
   const orders = useAdminOrders();
-  const [invoiceId, setInvoiceId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [pageSize, setPageSize] = useState(10);
 
   const money = (v: number) =>
     format.number(v, { style: "currency", currency: "BDT", maximumFractionDigits: 0 });
 
   const rows = useMemo(() => productSalesSummary(orders), [orders]);
-  const selected = invoiceId ? rows.find((r) => r.id === invoiceId) ?? null : null;
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) => r.name.toLowerCase().includes(q));
+  }, [rows, query]);
+
+  const totals = useMemo(() => {
+    return {
+      revenue: rows.reduce((n, r) => n + r.revenue, 0),
+      qty: rows.reduce((n, r) => n + r.qty, 0),
+      orders: rows.reduce((n, r) => n + r.orders, 0),
+    };
+  }, [rows]);
+
+  const stats = [
+    { label: t("pinvoices.colRevenue"), value: money(totals.revenue), icon: Banknote, iconClassName: "bg-secondary/15 text-secondary" },
+    { label: t("pinvoices.colQty"), value: String(totals.qty), icon: ShoppingCart, iconClassName: "bg-primary/15 text-secondary" },
+    { label: t("pinvoices.colOrders"), value: String(totals.orders), icon: Package, iconClassName: "bg-green-600/10 text-green-700" },
+  ];
+
+  const csvEscape = (value: string | number) => {
+    const s = String(value);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+
+  const handleExport = () => {
+    if (filtered.length === 0) {
+      toast.error(t("orders.noSelection"));
+      return;
+    }
+    const lines = [
+      ["product", "qty", "orders", "revenue"].join(","),
+      ...filtered.map((r) => [r.name, r.qty, r.orders, r.revenue].map(csvEscape).join(",")),
+    ];
+    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "product-invoices.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(t("products.exportSuccess", { count: filtered.length }));
+  };
 
   return (
     <div className="flex flex-col gap-6">
       <AdminPageHeader title={t("pinvoices.title")} description={t("pinvoices.subtitle")} />
-      <Card className="border-border bg-card">
-        <CardContent className="overflow-x-auto p-0">
-          <Table className="[&_td]:border-border [&_td]:px-4 [&_td]:py-3 [&_td:not(:first-child)]:border-l [&_th]:h-12 [&_th]:border-white/25 [&_th]:px-4 [&_th]:text-white [&_th:not(:first-child)]:border-l">
-            <TableHeader>
-              <TableRow className="bg-secondary hover:bg-secondary">
-                <TableHead>{t("pinvoices.colProduct")}</TableHead>
-                <TableHead className="text-center">{t("pinvoices.colQty")}</TableHead>
-                <TableHead className="text-center">{t("pinvoices.colOrders")}</TableHead>
-                <TableHead className="text-right">{t("pinvoices.colRevenue")}</TableHead>
-                <TableHead className="w-12">
-                  <span className="sr-only">{t("pinvoices.viewInvoice")}</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <span className="relative block size-11 shrink-0 overflow-hidden bg-muted">
-                        {row.image ? (
-                          <Image src={row.image} alt={row.name} fill sizes="44px" className="object-cover" />
-                        ) : (
-                          <span className="font-heading flex h-full w-full items-center justify-center text-lg font-bold text-primary">
-                            {(row.name[0] ?? "?").toUpperCase()}
-                          </span>
-                        )}
-                      </span>
-                      <span className="max-w-56 truncate text-sm font-semibold text-foreground">
-                        {row.name}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center font-semibold">{row.qty}</TableCell>
-                  <TableCell className="text-center font-semibold">{row.orders}</TableCell>
-                  <TableCell className="text-right font-bold text-secondary">{money(row.revenue)}</TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => setInvoiceId(row.id)}
-                      aria-label={`${t("pinvoices.viewInvoice")} ${row.name}`}
-                    >
-                      <Eye className="size-4" aria-hidden="true" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
 
-      <Dialog open={!!selected} onOpenChange={(open) => !open && setInvoiceId(null)}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-          {selected ? (
-            <>
-              <div id="invoice-print">
-                <ProductInvoiceDoc row={selected} />
+      <div className="grid gap-4 sm:grid-cols-3">
+        {stats.map((s) => (
+          <Card key={s.label} className="border-border bg-card">
+            <CardContent className="flex items-start justify-between gap-4 p-5">
+              <div className="flex min-w-0 flex-col gap-1">
+                <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                  {s.label}
+                </p>
+                <p className="font-heading truncate text-2xl font-bold text-foreground">
+                  {s.value}
+                </p>
               </div>
-              <div className="flex items-center justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={() => setInvoiceId(null)}>
-                  {t("orders.detailsClose")}
-                </Button>
-                <Button size="sm" className="gap-1.5" onClick={() => window.print()}>
-                  <Printer className="size-3.5" aria-hidden="true" />
-                  {t("orders.invPrint")}
-                </Button>
-              </div>
-            </>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+              <span className={`flex size-11 shrink-0 items-center justify-center ${s.iconClassName}`}>
+                <s.icon className="size-5" aria-hidden="true" />
+              </span>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="relative w-full sm:max-w-xs">
+          <Search
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("pinvoices.searchPlaceholder")}
+            className="bg-card pl-9"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v) || 10)}>
+            <SelectTrigger size="sm" className="h-8 w-24 bg-card" aria-label="Rows per page">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[10, 20, 50, 100].map((n) => (
+                <SelectItem key={n} value={String(n)}>
+                  {n}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm" className="h-8 gap-1.5 bg-card" onClick={handleExport}>
+            <Download className="size-3.5 text-secondary" aria-hidden="true" />
+            {t("products.exportBtn")}
+          </Button>
+        </div>
+      </div>
+
+      <InvoicesTable rows={filtered} pageSize={pageSize} onPageSizeChange={setPageSize} />
     </div>
   );
 }

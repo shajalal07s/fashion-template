@@ -345,7 +345,7 @@ export function RichTextEditor({ value, onChange, placeholder, minHeight = 120 }
         onKeyDown={handleTab}
         onMouseUp={refreshState}
         onKeyUp={refreshState}
-        className="px-3 py-2 text-sm leading-relaxed outline-none empty:before:text-muted-foreground empty:before:content-[attr(data-placeholder)] [&_h2]:font-heading [&_h2]:text-lg [&_h2]:font-bold [&_h3]:font-heading [&_h3]:text-base [&_h3]:font-bold [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-1 [&_ul]:list-disc [&_ul]:pl-5 [&_a]:text-secondary [&_a]:underline [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-border [&_th]:bg-muted/60 [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1.5"
+        className="px-3 py-2 text-sm leading-relaxed outline-none empty:before:text-muted-foreground empty:before:content-[attr(data-placeholder)] [&_h2]:font-heading [&_h2]:text-lg [&_h2]:font-bold [&_h3]:font-heading [&_h3]:text-base [&_h3]:font-bold [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-1 [&_ul]:list-disc [&_ul]:pl-5 [&_a]:text-secondary [&_a]:underline [&_table]:w-full [&_table]:border-collapse [&_table]:bg-white [&_th]:border [&_th]:border-border [&_th]:bg-muted/60 [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left [&_th]:text-[#1a0d00] [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1.5 [&_td]:text-[#1a0d00]"
         style={{ minHeight }}
       />
     </div>

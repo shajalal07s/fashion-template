@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { QRCodeSVG } from "qrcode.react";
 import { Check, Truck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isHtmlDescription, RichDescription, plainDescription } from "@/components/shop/rich-description";
 import { useState } from "react";
 import type { Product } from "@/types/product";
 
@@ -36,6 +37,18 @@ export function ProductInfo({ product, qrValue }: ProductInfoProps) {
           <p className="text-muted-foreground text-xs">
             <span className="font-semibold">{t("sku")}:</span> {product.sku}
           </p>
+        ) : null}
+        {product.shortDescription ? (
+          isHtmlDescription(product.shortDescription) ? (
+            <RichDescription
+              html={product.shortDescription}
+              className="text-muted-foreground text-sm"
+            />
+          ) : (
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              {plainDescription(product.shortDescription)}
+            </p>
+          )
         ) : null}
         <span
           className={cn(

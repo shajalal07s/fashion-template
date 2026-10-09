@@ -59,9 +59,6 @@ export function ProductPurchaseCard({ product }: ProductPurchaseCardProps) {
               </span>
             )}
           </div>
-          <p className="text-muted-foreground line-clamp-3 text-sm leading-relaxed">
-            {product.description}
-          </p>
         </div>
 
         <div className="flex flex-col gap-2">
@@ -89,10 +86,18 @@ export function ProductPurchaseCard({ product }: ProductPurchaseCardProps) {
               <Plus className="size-4" aria-hidden="true" />
             </button>
           </div>
+          <div className="flex items-center justify-between border px-3 py-2.5">
+            <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+              {t("totalPrice")}
+            </span>
+            <span className="text-secondary text-lg font-bold">
+              {format.number(product.price * quantity, { style: "currency", currency: "BDT" })}
+            </span>
+          </div>
         </div>
 
         <div className="flex flex-col gap-2.5">
-          <Button className="w-full gap-2" onClick={handleAddToCart}>
+          <Button className="h-auto w-full gap-2 py-3" onClick={handleAddToCart}>
             {justAdded ? (
               <>
                 <Plus className="size-4" aria-hidden="true" />
@@ -105,7 +110,7 @@ export function ProductPurchaseCard({ product }: ProductPurchaseCardProps) {
               </>
             )}
           </Button>
-          <Button variant="secondary" className="w-full gap-2">
+          <Button variant="secondary" className="h-auto w-full gap-2 py-3">
             <Zap className="size-4" aria-hidden="true" />
             {t("buyNow")}
           </Button>

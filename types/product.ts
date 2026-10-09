@@ -14,6 +14,8 @@ export interface Product {
   subcategory?: string;
   brand?: string;
   stock: number;
+  stockStatus?: "instock" | "outofstock" | "backorder";
+  lowStockThreshold?: number;
   rating?: number;
   isActive: boolean;
   createdAt: string;

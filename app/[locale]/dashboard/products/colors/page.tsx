@@ -1,24 +1,22 @@
 "use client";
 
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { ColorAddPanel } from "@/components/admin/products/ColorsTable";
+import { ColorsTable, type ColorRow } from "@/components/admin/products/ColorsTable";
 import { products } from "@/features/shop/products";
+import { useAdminProductsStore } from "@/store/admin-products.store";
+import { toast } from "sonner";
 
 export default function DashboardColorsPage() {
   const t = useTranslations("Dashboard.admin");
+  const customColors = useAdminProductsStore((s) => s.customColors);
+  const addCustomColor = useAdminProductsStore((s) => s.addCustomColor);
+  const removeCustomColor = useAdminProductsStore((s) => s.removeCustomColor);
+  const metaMap = useAdminProductsStore((s) => s.colorMeta);
 
-  const colors = useMemo(() => {
+  const colors = useMemo<ColorRow[]>(() => {
     const map = new Map<string, { products: Set<string>; thumbs: string[]; stock: number }>();
     for (const p of products) {
       for (const color of p.colors ?? []) {
@@ -29,8 +27,24 @@ export default function DashboardColorsPage() {
         map.set(color, entry);
       }
     }
-    return [...map.entries()].sort((a, b) => b[1].products.size - a[1].products.size);
-  }, []);
+    for (const color of customColors) {
+      if (!map.has(color)) map.set(color, { products: new Set<string>(), thumbs: [], stock: 0 });
+    }
+    return [...map.entries()]
+      .map(([hex, info]) => {
+        const meta = metaMap[hex];
+        return {
+          hex,
+          productNames: [...info.products],
+          thumbs: info.thumbs,
+          stock: info.stock,
+          author: meta?.author ?? "__system__",
+          createdAt: meta?.createdAt ?? "",
+          updatedAt: meta?.updatedAt ?? "",
+        };
+      })
+      .sort((a, b) => b.productNames.length - a.productNames.length);
+  }, [customColors, metaMap]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -38,57 +52,23 @@ export default function DashboardColorsPage() {
         title={t("colors.title")}
         description={t("colors.subtitle", { count: colors.length })}
       />
-      <Card className="border-border bg-card">
-        <CardContent className="overflow-x-auto p-0">
-          <Table className="[&_td]:border-border [&_td]:px-4 [&_td]:py-3 [&_td:not(:first-child)]:border-l [&_th]:h-12 [&_th]:border-white/25 [&_th]:px-4 [&_th]:text-white [&_th:not(:first-child)]:border-l">
-            <TableHeader>
-              <TableRow className="bg-secondary hover:bg-secondary">
-                <TableHead>{t("colors.colColor")}</TableHead>
-                <TableHead>{t("colors.colProducts")}</TableHead>
-                <TableHead className="text-right">{t("colors.colStock")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {colors.map(([hex, info]) => (
-                <TableRow key={hex}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="block size-9 shrink-0 border border-black/10 shadow-sm"
-                        style={{ backgroundColor: hex }}
-                        aria-hidden="true"
-                      />
-                      <span className="font-mono text-xs font-bold uppercase">{hex}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className="flex -space-x-2">
-                        {info.thumbs.map((src, i) => (
-                          <span
-                            key={`${hex}-${i}`}
-                            className="relative block size-8 shrink-0 overflow-hidden border border-white bg-muted shadow-sm"
-                          >
-                            <Image src={src} alt="" fill sizes="32px" className="object-cover" />
-                          </span>
-                        ))}
-                      </span>
-                      <span className="text-sm font-semibold">
-                        {info.products.size}{" "}
-                        <span className="max-w-56 truncate font-normal text-muted-foreground">
-                          · {[...info.products].slice(0, 2).join(", ")}
-                          {info.products.size > 2 ? "…" : ""}
-                        </span>
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right font-bold text-secondary">{info.stock}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <div className="grid items-start gap-4 lg:grid-cols-[240px_1fr]">
+        <ColorAddPanel
+          existing={colors.map((c) => c.hex)}
+          onAdd={(hex) => {
+            addCustomColor(hex.toLowerCase());
+            toast.success(t("colors.colorAdded"));
+          }}
+        />
+        <ColorsTable
+          rows={colors}
+          onBulkDelete={(hexes) => {
+            const custom = hexes.filter((h) => customColors.includes(h));
+            for (const h of custom) removeCustomColor(h);
+            toast.success(t("colors.toastBulkDeleted", { count: custom.length }));
+          }}
+        />
+      </div>
     </div>
   );
 }

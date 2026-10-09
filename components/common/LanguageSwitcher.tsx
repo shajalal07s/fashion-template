@@ -16,7 +16,13 @@ const LANGUAGES = [
   { code: "bn", label: "বাংলা", native: "বাংলা" },
 ] as const;
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({
+  variant = "ghost",
+  className,
+}: {
+  variant?: "ghost" | "outline";
+  className?: string;
+} = {}) {
   const t = useTranslations("LanguageSwitcher");
   const locale = useLocale();
   const router = useRouter();
@@ -37,8 +43,8 @@ export function LanguageSwitcher() {
           openOnHover
           delay={200}
           closeDelay={100}
-          render={
-            <Button variant="ghost" size="sm" aria-label={t("label")}>
+            render={
+              <Button variant={variant} size="sm" className={className} aria-label={t("label")}>
               <Globe className="size-4" aria-hidden="true" />
               <span className="font-medium">{current.native}</span>
             </Button>

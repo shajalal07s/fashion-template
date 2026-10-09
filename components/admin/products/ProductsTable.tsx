@@ -47,6 +47,7 @@ import { useAdminOrders } from "@/features/admin/useAdminOrders";
 import { productSalesSummary } from "@/features/admin/analytics";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/product";
+import { printInvoiceDoc } from "@/components/admin/print-invoice";
 
 export interface ProductEditPatch {
   name: string;
@@ -442,7 +443,7 @@ export function ProductsTable({
                 <Button variant="outline" size="sm" onClick={() => setInvoiceId(null)}>
                   {t("orders.detailsClose")}
                 </Button>
-                <Button size="sm" className="gap-1.5" onClick={() => window.print()}>
+                <Button size="sm" className="gap-1.5" onClick={() => printInvoiceDoc()}>
                   <Printer className="size-3.5" aria-hidden="true" />
                   {t("orders.invPrint")}
                 </Button>

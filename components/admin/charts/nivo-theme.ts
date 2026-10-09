@@ -6,6 +6,9 @@ export const STATUS_COLORS: Record<string, string> = {
   Processing: "#f8ac0c",
   Pending: "#6b5d4a",
   Cancelled: "#dc2626",
+  Completed: "#16a34a",
+  Missed: "#ff8000",
+  Failed: "#dc2626",
 };
 
 export const nivoTheme = {

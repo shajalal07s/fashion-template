@@ -15,6 +15,7 @@ export function useAdminOrders(): AdminOrder[] {
       customerName: o.customer.fullName,
       customerEmail: o.customer.email,
       customerPhone: o.customer.phone,
+      address: o.customer.address,
       city: o.customer.city,
       items: o.items.map((i) => ({
         productId: i.product.id,

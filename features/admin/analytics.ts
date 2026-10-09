@@ -23,6 +23,7 @@ export interface AdminOrder {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  address: string;
   city: string;
   items: AdminOrderItem[];
   payment: "cod" | "bkash" | "nagad" | "card";
@@ -91,6 +92,8 @@ const LAST_NAMES = [
 
 const CITIES = ["Dhaka", "Chattogram", "Sylhet", "Rajshahi", "Khulna", "Barishal", "Rangpur"];
 
+const AREAS = ["Mirpur", "Dhanmondi", "Uttara", "Gulshan", "Banani", "Mohammadpur", "Bashundhara", "Wari", "Khilgaon", "Narayanganj"];
+
 const PAYMENTS: AdminOrder["payment"][] = ["cod", "bkash", "nagad", "card"];
 
 const STATUS_POOL: AdminOrderStatus[] = [
@@ -155,12 +158,14 @@ export function buildDemoOrders(now = new Date()): AdminOrder[] {
       const first = FIRST_NAMES[Math.floor(rand() * FIRST_NAMES.length)];
       const last = LAST_NAMES[Math.floor(rand() * LAST_NAMES.length)];
       const city = CITIES[Math.floor(rand() * CITIES.length)];
+      const address = `House ${1 + Math.floor(rand() * 99)}, Road ${1 + Math.floor(rand() * 20)}, ${AREAS[Math.floor(rand() * AREAS.length)]}`;
       orders.push({
         id: `FS-${monthKey(date).replace("-", "")}-${seq++}`,
         date: date.toISOString(),
         customerName: `${first} ${last}`,
         customerEmail: `${first.toLowerCase()}.${last.toLowerCase()}${Math.floor(rand() * 90 + 10)}@example.com`,
         customerPhone: `01${Math.floor(300000000 + rand() * 699999999)}`,
+        address,
         city,
         items,
         payment: PAYMENTS[Math.floor(rand() * PAYMENTS.length)],

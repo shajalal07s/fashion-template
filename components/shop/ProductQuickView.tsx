@@ -5,6 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Eye, Heart, Plus, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isHtmlDescription, RichDescription } from "@/components/shop/rich-description";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cart.store";
 import { useWishlistStore } from "@/store/wishlist.store";
@@ -67,7 +68,11 @@ export function ProductQuickView({ product }: ProductQuickViewProps) {
           )}
         </div>
 
-        <p className="text-muted-foreground text-sm leading-relaxed">{product.description}</p>
+        {isHtmlDescription(product.description) ? (
+          <RichDescription html={product.description} className="text-muted-foreground text-sm" />
+        ) : (
+          <p className="text-muted-foreground text-sm leading-relaxed">{product.description}</p>
+        )}
 
         <span
           className={cn(

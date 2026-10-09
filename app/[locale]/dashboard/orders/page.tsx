@@ -33,6 +33,7 @@ import { useAdminOrders } from "@/features/admin/useAdminOrders";
 import { cn } from "@/lib/utils";
 import type { AdminOrder, AdminOrderStatus } from "@/features/admin/analytics";
 import { toast } from "sonner";
+import { printInvoiceDoc } from "@/components/admin/print-invoice";
 
 type Filter = "all" | AdminOrderStatus;
 
@@ -232,6 +233,7 @@ export default function DashboardOrdersPage() {
           customerName: name,
           customerEmail: col(row, "email") || "imported@example.com",
           customerPhone: col(row, "phone") || "",
+          address: col(row, "address") || "",
           city: col(row, "city") || "",
           items: [
             {
@@ -394,7 +396,7 @@ export default function DashboardOrdersPage() {
             <Button variant="outline" size="sm" onClick={() => setBulkInvoiceOpen(false)}>
               {t("orders.detailsClose")}
             </Button>
-            <Button size="sm" className="gap-1.5" onClick={() => window.print()}>
+            <Button size="sm" className="gap-1.5" onClick={() => printInvoiceDoc()}>
               <Printer className="size-3.5" aria-hidden="true" />
               {t("orders.invPrint")}
             </Button>

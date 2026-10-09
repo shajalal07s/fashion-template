@@ -3,9 +3,11 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
-import { GripVertical, ImagePlus, Play, Plus, Sparkles, Star, Trash2, Upload, Video, X } from "lucide-react";
+import { GripVertical, ImagePlus, Play, Plus, RefreshCw, Sparkles, Star, Trash2, Upload, Video, X } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,7 +19,41 @@ import {
 } from "@/components/ui/select";
 import { RichTextEditor } from "@/components/admin/editor/RichTextEditor";
 import { cn } from "@/lib/utils";
-import type { ProductSeo } from "@/store/admin-products.store";
+import type { ProductAttribute, ProductSeo, ProductVariation } from "@/store/admin-products.store";
+
+export function isRenderableImage(src: string): boolean {
+  const clean = src.trim();
+  return (
+    clean.length > 0 &&
+    /^(data:image\/|blob:|https?:\/\/|\/[^/\s])/.test(clean)
+  );
+}
+
+export function SafeThumb({
+  src,
+  alt,
+  sizes,
+  fallback,
+}: {
+  src: string;
+  alt: string;
+  sizes: string;
+  fallback?: React.ReactNode;
+}) {
+  const clean = src.trim();
+  if (!isRenderableImage(clean)) {
+    return (
+      <span className="flex h-full w-full items-center justify-center">
+        {fallback ?? (
+          <span className="font-heading text-sm font-bold text-primary" aria-hidden="true">
+            {(alt[0] ?? "?").toUpperCase()}
+          </span>
+        )}
+      </span>
+    );
+  }
+  return <Image src={clean} alt={alt} fill sizes={sizes} className="object-cover" draggable={false} />;
+}
 
 export function SectionCard({
   title,
@@ -140,20 +176,16 @@ export function PricingSection({
   onPrice,
   compare,
   onCompare,
-  stock,
-  onStock,
 }: {
   price: number;
   onPrice: (v: number) => void;
   compare: number | null;
   onCompare: (v: number | null) => void;
-  stock: number;
-  onStock: (v: number) => void;
 }) {
   const t = useTranslations("Dashboard.admin");
   return (
     <SectionCard title={t("products.epPricing")}>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t("products.epPrice")}>
           <Input
             type="number"
@@ -169,15 +201,6 @@ export function PricingSection({
             min={0}
             value={compare ?? ""}
             onChange={(e) => onCompare(e.target.value === "" ? null : Number(e.target.value) || 0)}
-            className="bg-card"
-          />
-        </Field>
-        <Field label={t("products.epStock")}>
-          <Input
-            type="number"
-            min={0}
-            value={stock}
-            onChange={(e) => onStock(Number(e.target.value) || 0)}
             className="bg-card"
           />
         </Field>
@@ -389,14 +412,7 @@ export function GallerySection({
               aria-hidden="true"
             />
             {src ? (
-              <Image
-                src={src}
-                alt={`${productName} ${i + 1}`}
-                fill
-                sizes="160px"
-                className="object-cover"
-                draggable={false}
-              />
+              <SafeThumb src={src} alt={`${productName} ${i + 1}`} sizes="160px" />
             ) : null}
             {i === 0 ? (
               <span className="absolute top-1 left-1 bg-secondary px-1.5 py-0.5 text-[10px] font-bold text-white uppercase">
@@ -712,6 +728,409 @@ export function SeoSection({
         <p className="font-mono text-[11px] text-muted-foreground">fashionstore.com.bd/{seo.slug}</p>
         <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{seo.metaDescription}</p>
       </div>
+    </SectionCard>
+  );
+}
+
+export type StockStatusKey = "auto" | "instock" | "outofstock" | "backorder";
+
+export function effectiveStockStatus(
+  manual: "instock" | "outofstock" | "backorder" | undefined,
+  stock: number
+): "instock" | "outofstock" | "backorder" {
+  if (manual) return manual;
+  if (stock <= 0) return "outofstock";
+  return "instock";
+}
+
+export function InventorySection({
+  stock,
+  onStock,
+  status,
+  onStatus,
+  threshold,
+  onThreshold,
+}: {
+  stock: number;
+  onStock: (v: number) => void;
+  status: StockStatusKey;
+  onStatus: (v: StockStatusKey) => void;
+  threshold: number;
+  onThreshold: (v: number) => void;
+}) {
+  const t = useTranslations("Dashboard.admin");
+  const effective = effectiveStockStatus(status === "auto" ? undefined : status, stock);
+  const badge =
+    effective === "instock" ? (
+      <Badge className="bg-green-600/10 font-semibold text-green-700">
+        {t("products.invInStock")} · {stock}
+      </Badge>
+    ) : effective === "backorder" ? (
+      <Badge className="bg-primary/20 font-semibold text-[#8a5a00]">
+        {t("products.invBackorder")} · {stock}
+      </Badge>
+    ) : (
+      <Badge className="bg-destructive/10 font-semibold text-destructive">
+        {t("products.invOutStock")} · {stock}
+      </Badge>
+    );
+  return (
+    <SectionCard title={t("products.invTitle")} action={badge}>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Field label={t("products.invStockQty")}>
+          <Input
+            type="number"
+            min={0}
+            value={stock}
+            onChange={(e) => onStock(Number(e.target.value) || 0)}
+            className="bg-card"
+          />
+        </Field>
+        <Field label={t("products.invStatus")}>
+          <Select value={status} onValueChange={(v) => v && onStatus(v as StockStatusKey)}>
+            <SelectTrigger className="w-full bg-card">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="auto">{t("products.invAuto")}</SelectItem>
+              <SelectItem value="instock">{t("products.invInStock")}</SelectItem>
+              <SelectItem value="outofstock">{t("products.invOutStock")}</SelectItem>
+              <SelectItem value="backorder">{t("products.invBackorder")}</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field label={t("products.invThreshold")}>
+          <Input
+            type="number"
+            min={0}
+            value={threshold}
+            onChange={(e) => onThreshold(Number(e.target.value) || 0)}
+            className="bg-card"
+          />
+        </Field>
+      </div>
+    </SectionCard>
+  );
+}
+
+function isHexColor(value: string) {
+  return /^#[0-9a-f]{6}$/i.test(value.trim());
+}
+
+export function AttributesSection({
+  attributes,
+  onChange,
+}: {
+  attributes: ProductAttribute[];
+  onChange: (attributes: ProductAttribute[]) => void;
+}) {
+  const t = useTranslations("Dashboard.admin");
+  const [newName, setNewName] = useState("");
+  const [draftValues, setDraftValues] = useState<Record<number, string>>({});
+
+  const addValue = (idx: number) => {
+    const raw = (draftValues[idx] ?? "").trim();
+    if (!raw) return;
+    const parts = raw.split(",").map((p) => p.trim()).filter(Boolean);
+    if (parts.length === 0) return;
+    onChange(
+      attributes.map((a, i) =>
+        i === idx
+          ? { ...a, values: [...a.values, ...parts.filter((p) => !a.values.includes(p))] }
+          : a
+      )
+    );
+    setDraftValues((d) => ({ ...d, [idx]: "" }));
+  };
+
+  return (
+    <SectionCard
+      title={t("products.attrTitle")}
+      action={
+        <div className="flex items-center gap-2">
+          <Input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder={t("products.attrName")}
+            className="h-8 w-40 bg-card"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                if (!newName.trim()) return;
+                onChange([
+                  ...attributes,
+                  { name: newName.trim(), values: [], forVariations: true },
+                ]);
+                setNewName("");
+              }
+            }}
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 shrink-0 gap-1 bg-card"
+            onClick={() => {
+              if (!newName.trim()) return;
+              onChange([...attributes, { name: newName.trim(), values: [], forVariations: true }]);
+              setNewName("");
+            }}
+          >
+            <Plus className="size-3.5" aria-hidden="true" />
+            {t("products.attrAdd")}
+          </Button>
+        </div>
+      }
+    >
+      {attributes.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          {t("products.attrName")} · {t("products.attrColorHint")} / {t("products.attrSizeHint")}
+        </p>
+      ) : null}
+      <div className="flex flex-col gap-3">
+        {attributes.map((attr, idx) => (
+          <div key={`${attr.name}-${idx}`} className="border border-border bg-card p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                value={attr.name}
+                onChange={(e) =>
+                  onChange(attributes.map((a, i) => (i === idx ? { ...a, name: e.target.value } : a)))
+                }
+                className="h-8 w-40 bg-card font-semibold"
+                aria-label={t("products.attrName")}
+              />
+              <label className="ml-auto flex cursor-pointer items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <Checkbox
+                  checked={attr.forVariations}
+                  onCheckedChange={(v) =>
+                    onChange(
+                      attributes.map((a, i) => (i === idx ? { ...a, forVariations: v === true } : a))
+                    )
+                  }
+                />
+                {t("products.attrForVars")}
+              </label>
+              <button
+                type="button"
+                onClick={() => onChange(attributes.filter((_, i) => i !== idx))}
+                aria-label={t("products.attrRemove")}
+                className="flex size-7 items-center justify-center text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="size-4" aria-hidden="true" />
+              </button>
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              {attr.values.map((value) => (
+                <span
+                  key={value}
+                  className="inline-flex items-center gap-1.5 border border-border bg-muted/50 py-1 pr-1 pl-2 text-xs font-medium"
+                >
+                  {isHexColor(value) ? (
+                    <span
+                      className="size-3.5 border border-black/10"
+                      style={{ backgroundColor: value }}
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                  {value}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onChange(
+                        attributes.map((a, i) =>
+                          i === idx ? { ...a, values: a.values.filter((v) => v !== value) } : a
+                        )
+                      )
+                    }
+                    aria-label={`Remove ${value}`}
+                    className="flex size-5 items-center justify-center text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="size-3" aria-hidden="true" />
+                  </button>
+                </span>
+              ))}
+              <Input
+                value={draftValues[idx] ?? ""}
+                onChange={(e) => setDraftValues((d) => ({ ...d, [idx]: e.target.value }))}
+                placeholder={t("products.attrValues")}
+                className="h-8 w-52 bg-card text-xs"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addValue(idx);
+                  }
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </SectionCard>
+  );
+}
+
+export function VariationsSection({
+  variations,
+  gallery,
+  onGenerate,
+  onChange,
+}: {
+  variations: ProductVariation[];
+  gallery: string[];
+  onGenerate: () => void;
+  onChange: (variations: ProductVariation[]) => void;
+}) {
+  const t = useTranslations("Dashboard.admin");
+  const [imgPicker, setImgPicker] = useState<string | null>(null);
+  return (
+    <SectionCard
+      title={`${t("products.varTitle")} (${variations.length})`}
+      action={
+        <Button size="sm" variant="outline" className="h-8 gap-1.5 bg-card" onClick={onGenerate}>
+          <RefreshCw className="size-3.5 text-secondary" aria-hidden="true" />
+          {variations.length > 0 ? t("products.varRegenerate") : t("products.varGenerate")}
+        </Button>
+      }
+    >
+      {variations.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{t("products.varEmpty")}</p>
+      ) : (
+        <div className="no-scrollbar max-h-[480px] overflow-auto border border-border">
+          <table className="w-full text-sm">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-secondary text-left text-xs tracking-wide text-white uppercase">
+                <th className="h-12 px-4 text-center font-semibold">{t("products.varImage")}</th>
+                <th className="h-12 border-l border-white/25 px-4 font-semibold">{t("products.varOptions")}</th>
+                <th className="h-12 border-l border-white/25 px-4 font-semibold">{t("products.varSku")}</th>
+                <th className="h-12 border-l border-white/25 px-4 font-semibold">{t("products.varPrice")}</th>
+                <th className="h-12 border-l border-white/25 px-4 font-semibold">{t("products.varStock")}</th>
+                <th className="h-12 border-l border-white/25 px-4 font-semibold">{t("products.varEnabled")}</th>
+              </tr>
+            </thead>
+            <tbody className="[&_tr]:border-b [&_tr]:border-border [&_tr:last-child]:border-0">
+              {variations.map((v) => (
+                <tr key={v.id} className="transition-colors hover:bg-muted/50">
+                  <td className="px-4 py-3">
+                    <div className="relative flex justify-center">
+                      <button
+                        type="button"
+                        onClick={() => setImgPicker(imgPicker === v.id ? null : v.id)}
+                        aria-label={`${t("products.varImage")} ${v.id}`}
+                        className="relative block size-11 shrink-0 overflow-hidden border border-border bg-muted transition-shadow hover:ring-2 hover:ring-secondary"
+                      >
+                        {v.image ? (
+                          <SafeThumb src={v.image} alt={v.id} sizes="44px" />
+                        ) : (
+                          <span className="flex h-full w-full items-center justify-center">
+                            <ImagePlus className="size-4 text-muted-foreground" aria-hidden="true" />
+                          </span>
+                        )}
+                      </button>
+                      {imgPicker === v.id ? (
+                        <>
+                          <div
+                            className="fixed inset-0 z-20"
+                            aria-hidden="true"
+                            onClick={() => setImgPicker(null)}
+                          />
+                          <div className="absolute top-full left-1/2 z-30 mt-1 grid w-52 -translate-x-1/2 grid-cols-4 gap-1 border border-border bg-card p-1.5 shadow-lg">
+                            {gallery.length > 0 ? (
+                              gallery.map((src, gi) => (
+                                <button
+                                  key={`${src.slice(0, 24)}-${gi}`}
+                                  type="button"
+                                  onClick={() => {
+                                    onChange(
+                                      variations.map((x) => (x.id === v.id ? { ...x, image: src } : x))
+                                    );
+                                    setImgPicker(null);
+                                  }}
+                                  aria-label={`Use image ${gi + 1}`}
+                                  className="relative block aspect-square overflow-hidden bg-muted transition-shadow hover:ring-2 hover:ring-secondary"
+                                >
+                                  {src ? (
+                                    <SafeThumb src={src} alt="" sizes="48px" />
+                                  ) : null}
+                                </button>
+                              ))
+                            ) : (
+                              <p className="col-span-4 px-1 py-2 text-center text-[11px] text-muted-foreground">
+                                {t("products.epMedia")}
+                              </p>
+                            )}
+                          </div>
+                        </>
+                      ) : null}
+                    </div>
+                  </td>
+                  <td className="border-l border-border px-4 py-3">
+                    <span className="flex flex-wrap gap-1">
+                      {Object.entries(v.options).map(([k, val]) => (
+                        <span
+                          key={k}
+                          className="inline-flex items-center gap-1 border border-border bg-muted/50 px-1.5 py-0.5 text-[11px] font-medium whitespace-nowrap"
+                        >
+                          {isHexColor(val) ? (
+                            <span
+                              className="size-3 border border-black/10"
+                              style={{ backgroundColor: val }}
+                              aria-hidden="true"
+                            />
+                          ) : null}
+                          <span className="text-muted-foreground">{k}:</span> {val}
+                        </span>
+                      ))}
+                    </span>
+                  </td>
+                  <td className="border-l border-border px-4 py-3 font-mono text-xs whitespace-nowrap">{v.sku}</td>
+                  <td className="border-l border-border px-4 py-3">
+                    <Input
+                      type="number"
+                      min={0}
+                      value={v.price}
+                      onChange={(e) =>
+                        onChange(
+                          variations.map((x) =>
+                            x.id === v.id ? { ...x, price: Number(e.target.value) || 0 } : x
+                          )
+                        )
+                      }
+                      className="h-8 w-24 bg-card"
+                    />
+                  </td>
+                  <td className="border-l border-border px-4 py-3">
+                    <Input
+                      type="number"
+                      min={0}
+                      value={v.stock}
+                      onChange={(e) =>
+                        onChange(
+                          variations.map((x) =>
+                            x.id === v.id ? { ...x, stock: Number(e.target.value) || 0 } : x
+                          )
+                        )
+                      }
+                      className="h-8 w-20 bg-card"
+                    />
+                  </td>
+                  <td className="border-l border-border px-4 py-3">
+                    <Checkbox
+                      checked={v.enabled}
+                      onCheckedChange={(checked) =>
+                        onChange(
+                          variations.map((x) =>
+                            x.id === v.id ? { ...x, enabled: checked === true } : x
+                          )
+                        )
+                      }
+                      aria-label={v.id}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </SectionCard>
   );
 }

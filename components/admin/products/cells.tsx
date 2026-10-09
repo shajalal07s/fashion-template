@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useFormatter, useTranslations } from "next-intl";
 import { Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/product";
 
@@ -20,9 +21,12 @@ export function ProductCell({ product }: { product: Product }) {
         )}
       </span>
       <span className="flex min-w-0 flex-col">
-        <span className="max-w-48 truncate text-sm font-semibold text-foreground">
+        <Link
+          href={`/dashboard/products/${product.id}/edit`}
+          className="max-w-48 truncate text-sm font-semibold text-foreground hover:text-secondary hover:underline"
+        >
           {product.name}
-        </span>
+        </Link>
         <span className="font-mono text-[11px] text-muted-foreground">{product.sku ?? "—"}</span>
       </span>
     </div>
