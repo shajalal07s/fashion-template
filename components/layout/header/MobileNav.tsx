@@ -14,6 +14,7 @@ import {
   LayoutGrid,
   Newspaper,
   Search,
+  ShieldCheck,
   ShoppingBag,
   Store,
   User,
@@ -207,6 +208,22 @@ export function MobileNav({ onNavigate }: MobileNavProps) {
           >
             <User className="size-5" aria-hidden="true" />
             {t("mobile.profile")}
+          </Link>
+          <Link
+            href={ROUTES.adminLogin}
+            onClick={onNavigate}
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <ShieldCheck className="size-5" aria-hidden="true" />
+            {t("mobile.adminLogin")}
+          </Link>
+          <Link
+            href="/vendor"
+            onClick={onNavigate}
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <Store className="size-5" aria-hidden="true" />
+            {t("mobile.vendorLogin")}
           </Link>
           <button
             type="button"

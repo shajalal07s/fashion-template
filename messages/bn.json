@@ -61,7 +61,9 @@
     "dashboard": "ড্যাশবোর্ড",
     "profile": "প্রোফাইল",
     "signOut": "লগআউট",
-    "hello": "হ্যালো, {name}"
+    "hello": "হ্যালো, {name}",
+    "adminLogin": "অ্যাডমিন লগইন",
+    "vendorLogin": "ভেন্ডর লগইন"
   },
   "WishlistPage": {
     "title": "আমার পছন্দের তালিকা",
@@ -337,7 +339,9 @@
       "wishlist": "আমার উইশলিস্ট",
       "cart": "আমার কার্ট",
       "profile": "আমার প্রোফাইল",
-      "search": "সার্চ"
+      "search": "সার্চ",
+      "adminLogin": "অ্যাডমিন লগইন",
+      "vendorLogin": "ভেন্ডর লগইন"
     },
     "bottom": {
       "label": "নিচের নেভিগেশন",
@@ -349,7 +353,9 @@
       "searchPlaceholder": "পণ্য খুঁজুন...",
       "searchDesc": "পণ্য খুঁজুন",
       "noResults": "কোনো পণ্য পাওয়া যায়নি।"
-    }
+    },
+    "adminLogin": "অ্যাডমিন লগইন",
+    "vendorLogin": "ভেন্ডর লগইন"
   },
   "Footer": {
     "navAria": "ফুটার নেভিগেশন",

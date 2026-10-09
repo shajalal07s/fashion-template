@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LayoutDashboard, LogOut, Settings, User } from "lucide-react";
+import { LayoutDashboard, LogOut, Settings, ShieldCheck, Store, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "@/i18n/navigation";
 import { buttonVariants } from "@/components/ui/button";
@@ -88,6 +88,22 @@ export function HeaderAccount() {
               >
                 {t("createAccount")}
               </Link>
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href={ROUTES.adminLogin}
+                  className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-full gap-1.5")}
+                >
+                  <ShieldCheck className="size-3.5" aria-hidden="true" />
+                  {t("adminLogin")}
+                </Link>
+                <Link
+                  href="/vendor"
+                  className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-full gap-1.5")}
+                >
+                  <Store className="size-3.5" aria-hidden="true" />
+                  {t("vendorLogin")}
+                </Link>
+              </div>
             </div>
           )}
         </div>

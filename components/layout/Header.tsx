@@ -1,8 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Menu } from "lucide-react";
+import { Menu, ShieldCheck, Store } from "lucide-react";
 import { useState } from "react";
+import { Link } from "@/i18n/navigation";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Container } from "@/components/common/Container";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 import { Logo } from "@/components/common/Logo";
@@ -57,6 +60,23 @@ export function Header() {
           <HeaderWishlist />
           <HeaderCart />
           <HeaderAccount />
+          <span aria-hidden="true" className="mx-1 h-5 w-px bg-border" />
+          <Link
+            href="/admin-login"
+            aria-label={t("adminLogin")}
+            title={t("adminLogin")}
+            className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+          >
+            <ShieldCheck className="size-5" aria-hidden="true" />
+          </Link>
+          <Link
+            href="/vendor"
+            aria-label={t("vendorLogin")}
+            title={t("vendorLogin")}
+            className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+          >
+            <Store className="size-5" aria-hidden="true" />
+          </Link>
         </div>
       </Container>
     </header>
